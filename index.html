@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#160d2c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="QRQC Fête">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>QRQC - La fête foraine</title>
+  <style>
+    :root { color-scheme: dark; --bg:#10091f; --panel:#211437; --cell:#170e29; --purple:#6035a0; --pink:#ff397a; --gold:#ffd166; --teal:#48e0c1; --soft:#c9b9e8; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#30204b 0%,var(--bg) 58%); color:#fff; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom); }
+    .app { max-width:1100px; margin:0 auto; }
+    header { text-align:center; padding:22px 8px 16px; }
+    .eyebrow { color:var(--teal); text-transform:uppercase; letter-spacing:.18em; font-size:.72rem; font-weight:800; }
+    h1 { margin:5px 0; font-size:clamp(1.65rem,5vw,2.8rem); line-height:1.08; }
+    header p { margin:8px 0 0; color:var(--soft); }
+    .layout { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:14px; align-items:start; }
+    .panel { background:color-mix(in srgb,var(--panel) 94%,transparent); border:1px solid #493267; border-radius:18px; padding:16px; box-shadow:0 12px 32px #0003; min-width:0; }
+    h2 { font-size:1rem; margin:0 0 12px; color:var(--gold); letter-spacing:.04em; }
+    .addrow { display:flex; gap:8px; }
+    input[type=text] { min-width:0; flex:1; border:1px solid #594176; border-radius:11px; background:var(--cell); color:white; padding:12px; font:inherit; }
+    button { border:0; border-radius:11px; padding:11px 13px; font:inherit; font-weight:750; color:#fff; background:var(--purple); cursor:pointer; touch-action:manipulation; }
+    button:active { transform:scale(.98); }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+    .add { background:var(--teal); color:#10221f; white-space:nowrap; }
+    .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+    .actions button { font-size:.88rem; }
+    .danger { background:#58304c; }
+    .muted { color:var(--soft); font-size:.86rem; }
+    .count { margin:12px 0 8px; font-size:.86rem; color:var(--soft); }
+    .name-list { display:flex; flex-direction:column; gap:7px; max-height:48vh; overflow:auto; padding-right:2px; }
+    .name-row { display:flex; align-items:center; gap:10px; padding:10px; background:var(--cell); border:1px solid #35244b; border-radius:12px; }
+    .name-row input { width:20px; height:20px; accent-color:var(--teal); flex-shrink:0; }
+    .name { flex:1; overflow-wrap:anywhere; }
+    .name.off { color:#8e829f; text-decoration:line-through; }
+    .remove { background:transparent; color:#ff8aaa; padding:5px 8px; font-size:1.1rem; }
+    .draw-panel { text-align:center; }
+    .marquee { border:2px solid var(--gold); border-radius:16px; padding:22px 12px; margin-bottom:12px; background:linear-gradient(135deg,#28173e,#120a22); }
+    .marquee .star { font-size:1.5rem; color:var(--gold); }
+    .winner { font-size:clamp(1.7rem,6vw,2.7rem); font-weight:900; overflow-wrap:anywhere; margin:8px 0; }
+    .draw { width:100%; padding:15px; font-size:1.05rem; background:var(--pink); box-shadow:0 5px 0 #a51c4a; }
+    .draw:active { box-shadow:0 2px 0 #a51c4a; }
+    .option { display:flex; gap:9px; align-items:flex-start; text-align:left; margin-top:14px; color:var(--soft); font-size:.9rem; }
+    .option input { accent-color:var(--pink); width:18px; height:18px; }
+    .history { display:flex; flex-direction:column; gap:7px; }
+    .history-item { display:flex; gap:8px; align-items:center; justify-content:space-between; background:var(--cell); padding:10px 12px; border-radius:10px; }
+    .history-item strong { color:var(--gold); overflow-wrap:anywhere; }
+    .history-item small { color:#9d8db4; white-space:nowrap; }
+    .empty { color:#9d8db4; font-size:.9rem; padding:10px 0; }
+    .footer { text-align:center; color:#8f80a5; font-size:.75rem; padding:18px 0 25px; }
+    .toast { position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:#f5d66e; color:#20152c; font-weight:800; padding:11px 16px; border-radius:12px; box-shadow:0 8px 28px #0006; display:none; max-width:90vw; text-align:center; z-index:10; }
+    @media(max-width:760px) { body{padding-left:10px;padding-right:10px} header{padding-top:18px} .layout{grid-template-columns:1fr} .name-list{max-height:38vh} .panel{padding:14px} }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">★ La roue de la fête foraine ★</div>
+    <h1>QRQC — Tirage au sort</h1>
+    <p>Étape 1 · Gestion des participants et des gagnants</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>🎟️ PARTICIPANTS</h2>
+      <form id="addForm" class="addrow">
+        <input id="nameInput" type="text" maxlength="60" placeholder="Ajouter un prénom…" autocomplete="off" aria-label="Prénom à ajouter">
+        <button class="add" type="submit">＋ Ajouter</button>
+      </form>
+      <div class="actions">
+        <button type="button" id="checkAll">Tout cocher</button>
+        <button type="button" id="uncheckAll">Tout décocher</button>
+        <button type="button" id="shuffle">🔀 Mélanger</button>
+        <button type="button" id="clear" class="danger">Tout effacer</button>
+      </div>
+      <div class="count" id="count">0 prénom coché sur 0</div>
+      <div class="name-list" id="nameList" aria-live="polite"></div>
+      <p class="muted">Maximum : 40 participants. Décoche un prénom pour l’exclure temporairement du tirage.</p>
+    </section>
+
+    <section class="panel draw-panel">
+      <h2>🎡 TIRAGE AU SORT</h2>
+      <div class="marquee" aria-live="polite">
+        <div class="star">★ ✦ ★</div>
+        <div class="winner" id="winner">À toi de jouer !</div>
+        <div class="muted" id="winnerHint">Ajoute au moins 2 participants cochés.</div>
+      </div>
+      <button class="draw" id="draw" type="button">LANCER LE TIRAGE !</button>
+      <label class="option"><input id="removeWinner" type="checkbox"><span>Décocher le gagnant après chaque tirage</span></label>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:8px">
+        <h2 style="margin:0">🏆 DERNIERS GAGNANTS</h2>
+        <button type="button" id="clearHistory" class="danger" style="font-size:.78rem;padding:8px 10px">Vider</button>
+      </div>
+      <div class="history" id="history" style="margin-top:10px"></div>
+    </section>
+  </main>
+  <div class="footer">QRQC · Application web installable sur iPhone · Version de départ</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const STORAGE_KEY = "qrqc-fete-etape1-v1";
+  let participants = [];
+  let history = [];
+  let toastTimer;
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({participants, history, removeWinner:$("removeWinner").checked})); } catch(e) {}
+  }
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (Array.isArray(d.participants)) participants = d.participants.filter(p => p && typeof p.name === "string").slice(0,40);
+      if (Array.isArray(d.history)) history = d.history.slice(0,30);
+      $("removeWinner").checked = !!d.removeWinner;
+    } catch(e) {}
+  }
+  function notify(message) {
+    const el = $("toast"); el.textContent = message; el.style.display = "block";
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.style.display = "none", 2400);
+  }
+  function renderParticipants() {
+    const list = $("nameList"); list.replaceChildren();
+    participants.forEach((p, index) => {
+      const row = document.createElement("div"); row.className = "name-row";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = p.checked; cb.setAttribute("aria-label", "Inclure " + p.name);
+      cb.addEventListener("change", () => { participants[index].checked = cb.checked; renderParticipants(); save(); });
+      const name = document.createElement("span"); name.className = "name" + (p.checked ? "" : " off"); name.textContent = p.name;
+      const remove = document.createElement("button"); remove.className = "remove"; remove.type = "button"; remove.textContent = "×"; remove.title = "Supprimer " + p.name; remove.setAttribute("aria-label", "Supprimer " + p.name);
+      remove.addEventListener("click", () => { participants.splice(index,1); renderParticipants(); save(); });
+      row.append(cb,name,remove); list.append(row);
+    });
+    const active = participants.filter(p => p.checked).length;
+    $("count").textContent = `${active} prénom${active>1?"s":""} coché${active>1?"s":""} sur ${participants.length}`;
+    $("draw").disabled = active < 2;
+    if (participants.length === 0) list.innerHTML = '<div class="empty">La piste est vide : ajoute des participants pour commencer.</div>';
+    save();
+  }
+  function renderHistory() {
+    const el = $("history"); el.replaceChildren();
+    if (!history.length) { el.innerHTML = '<div class="empty">Aucun gagnant pour le moment.</div>'; return; }
+    history.slice(0,10).forEach(item => {
+      const row = document.createElement("div"); row.className = "history-item";
+      const n = document.createElement("strong"); n.textContent = "★ " + item.name;
+      const d = document.createElement("small"); d.textContent = item.time;
+      row.append(n,d); el.append(row);
+    });
+  }
+  function addName(value) {
+    const name = value.trim();
+    if (!name) { notify("Saisis un prénom avant d’ajouter."); return false; }
+    if (participants.length >= 40) { notify("Maximum atteint : 40 participants."); return false; }
+    if (participants.some(p => p.name.toLocaleLowerCase("fr") === name.toLocaleLowerCase("fr"))) { notify("Ce prénom est déjà dans la liste."); return false; }
+    participants.push({name, checked:true}); renderParticipants(); $("winnerHint").textContent = "Prêt pour le tirage !"; return true;
+  }
+  $("addForm").addEventListener("submit", e => {
+    e.preventDefault(); if (addName($("nameInput").value)) $("nameInput").value = "";
+    $("nameInput").focus();
+  });
+  $("checkAll").addEventListener("click", () => { participants.forEach(p => p.checked=true); renderParticipants(); });
+  $("uncheckAll").addEventListener("click", () => { participants.forEach(p => p.checked=false); renderParticipants(); });
+  $("shuffle").addEventListener("click", () => {
+    for(let i=participants.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[participants[i],participants[j]]=[participants[j],participants[i]];}
+    renderParticipants(); notify("Liste mélangée !");
+  });
+  $("clear").addEventListener("click", () => {
+    if (!participants.length) return;
+    if (confirm("Effacer tous les participants ?")) { participants=[]; renderParticipants(); $("winner").textContent="À toi de jouer !"; $("winnerHint").textContent="Ajoute au moins 2 participants cochés."; }
+  });
+  $("draw").addEventListener("click", () => {
+    const active = participants.filter(p=>p.checked);
+    if(active.length<2){notify("Il faut au moins 2 participants cochés.");return;}
+    const btn=$("draw"); btn.disabled=true;
+    $("winner").textContent="🍀 Bonne chance…"; $("winnerHint").textContent="Le tirage est en cours";
+    let ticks=0;
+    const spin=setInterval(()=>{
+      const temp=active[Math.floor(Math.random()*active.length)];
+      $("winner").textContent=temp.name; ticks++;
+      if(ticks>=14){
+        clearInterval(spin);
+        const winner=active[Math.floor(Math.random()*active.length)];
+        $("winner").textContent=winner.name; $("winnerHint").textContent="★ Félicitations ! ★";
+        history.unshift({name:winner.name,time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · "+new Date().toLocaleDateString("fr-FR")});
+        history=history.slice(0,30); renderHistory();
+        if($("removeWinner").checked){const p=participants.find(p=>p.name===winner.name);if(p)p.checked=false;renderParticipants();}
+        else btn.disabled=participants.filter(p=>p.checked).length<2;
+        save();
+      }
+    },85);
+  });
+  $("removeWinner").addEventListener("change",save);
+  $("clearHistory").addEventListener("click",()=>{if(history.length&&confirm("Vider l’historique des gagnants ?")){history=[];renderHistory();save();}});
+  load(); renderParticipants(); renderHistory();
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>
