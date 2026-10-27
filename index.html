@@ -1,204 +1,112 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#160d2c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="QRQC Fête">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.svg">
-  <title>QRQC - La fête foraine</title>
-  <style>
-    :root { color-scheme: dark; --bg:#10091f; --panel:#211437; --cell:#170e29; --purple:#6035a0; --pink:#ff397a; --gold:#ffd166; --teal:#48e0c1; --soft:#c9b9e8; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#30204b 0%,var(--bg) 58%); color:#fff; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom); }
-    .app { max-width:1100px; margin:0 auto; }
-    header { text-align:center; padding:22px 8px 16px; }
-    .eyebrow { color:var(--teal); text-transform:uppercase; letter-spacing:.18em; font-size:.72rem; font-weight:800; }
-    h1 { margin:5px 0; font-size:clamp(1.65rem,5vw,2.8rem); line-height:1.08; }
-    header p { margin:8px 0 0; color:var(--soft); }
-    .layout { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:14px; align-items:start; }
-    .panel { background:color-mix(in srgb,var(--panel) 94%,transparent); border:1px solid #493267; border-radius:18px; padding:16px; box-shadow:0 12px 32px #0003; min-width:0; }
-    h2 { font-size:1rem; margin:0 0 12px; color:var(--gold); letter-spacing:.04em; }
-    .addrow { display:flex; gap:8px; }
-    input[type=text] { min-width:0; flex:1; border:1px solid #594176; border-radius:11px; background:var(--cell); color:white; padding:12px; font:inherit; }
-    button { border:0; border-radius:11px; padding:11px 13px; font:inherit; font-weight:750; color:#fff; background:var(--purple); cursor:pointer; touch-action:manipulation; }
-    button:active { transform:scale(.98); }
-    button:disabled { opacity:.4; cursor:not-allowed; }
-    .add { background:var(--teal); color:#10221f; white-space:nowrap; }
-    .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
-    .actions button { font-size:.88rem; }
-    .danger { background:#58304c; }
-    .muted { color:var(--soft); font-size:.86rem; }
-    .count { margin:12px 0 8px; font-size:.86rem; color:var(--soft); }
-    .name-list { display:flex; flex-direction:column; gap:7px; max-height:48vh; overflow:auto; padding-right:2px; }
-    .name-row { display:flex; align-items:center; gap:10px; padding:10px; background:var(--cell); border:1px solid #35244b; border-radius:12px; }
-    .name-row input { width:20px; height:20px; accent-color:var(--teal); flex-shrink:0; }
-    .name { flex:1; overflow-wrap:anywhere; }
-    .name.off { color:#8e829f; text-decoration:line-through; }
-    .remove { background:transparent; color:#ff8aaa; padding:5px 8px; font-size:1.1rem; }
-    .draw-panel { text-align:center; }
-    .marquee { border:2px solid var(--gold); border-radius:16px; padding:22px 12px; margin-bottom:12px; background:linear-gradient(135deg,#28173e,#120a22); }
-    .marquee .star { font-size:1.5rem; color:var(--gold); }
-    .winner { font-size:clamp(1.7rem,6vw,2.7rem); font-weight:900; overflow-wrap:anywhere; margin:8px 0; }
-    .draw { width:100%; padding:15px; font-size:1.05rem; background:var(--pink); box-shadow:0 5px 0 #a51c4a; }
-    .draw:active { box-shadow:0 2px 0 #a51c4a; }
-    .option { display:flex; gap:9px; align-items:flex-start; text-align:left; margin-top:14px; color:var(--soft); font-size:.9rem; }
-    .option input { accent-color:var(--pink); width:18px; height:18px; }
-    .history { display:flex; flex-direction:column; gap:7px; }
-    .history-item { display:flex; gap:8px; align-items:center; justify-content:space-between; background:var(--cell); padding:10px 12px; border-radius:10px; }
-    .history-item strong { color:var(--gold); overflow-wrap:anywhere; }
-    .history-item small { color:#9d8db4; white-space:nowrap; }
-    .empty { color:#9d8db4; font-size:.9rem; padding:10px 0; }
-    .footer { text-align:center; color:#8f80a5; font-size:.75rem; padding:18px 0 25px; }
-    .toast { position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:#f5d66e; color:#20152c; font-weight:800; padding:11px 16px; border-radius:12px; box-shadow:0 8px 28px #0006; display:none; max-width:90vw; text-align:center; z-index:10; }
-    @media(max-width:760px) { body{padding-left:10px;padding-right:10px} header{padding-top:18px} .layout{grid-template-columns:1fr} .name-list{max-height:38vh} .panel{padding:14px} }
-  </style>
-</head>
-<body>
-<div class="app">
-  <header>
-    <div class="eyebrow">★ La roue de la fête foraine ★</div>
-    <h1>QRQC — Tirage au sort</h1>
-    <p>Étape 1 · Gestion des participants et des gagnants</p>
-  </header>
-
-  <main class="layout">
-    <section class="panel">
-      <h2>🎟️ PARTICIPANTS</h2>
-      <form id="addForm" class="addrow">
-        <input id="nameInput" type="text" maxlength="60" placeholder="Ajouter un prénom…" autocomplete="off" aria-label="Prénom à ajouter">
-        <button class="add" type="submit">＋ Ajouter</button>
-      </form>
-      <div class="actions">
-        <button type="button" id="checkAll">Tout cocher</button>
-        <button type="button" id="uncheckAll">Tout décocher</button>
-        <button type="button" id="shuffle">🔀 Mélanger</button>
-        <button type="button" id="clear" class="danger">Tout effacer</button>
-      </div>
-      <div class="count" id="count">0 prénom coché sur 0</div>
-      <div class="name-list" id="nameList" aria-live="polite"></div>
-      <p class="muted">Maximum : 40 participants. Décoche un prénom pour l’exclure temporairement du tirage.</p>
-    </section>
-
-    <section class="panel draw-panel">
-      <h2>🎡 TIRAGE AU SORT</h2>
-      <div class="marquee" aria-live="polite">
-        <div class="star">★ ✦ ★</div>
-        <div class="winner" id="winner">À toi de jouer !</div>
-        <div class="muted" id="winnerHint">Ajoute au moins 2 participants cochés.</div>
-      </div>
-      <button class="draw" id="draw" type="button">LANCER LE TIRAGE !</button>
-      <label class="option"><input id="removeWinner" type="checkbox"><span>Décocher le gagnant après chaque tirage</span></label>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:8px">
-        <h2 style="margin:0">🏆 DERNIERS GAGNANTS</h2>
-        <button type="button" id="clearHistory" class="danger" style="font-size:.78rem;padding:8px 10px">Vider</button>
-      </div>
-      <div class="history" id="history" style="margin-top:10px"></div>
-    </section>
-  </main>
-  <div class="footer">QRQC · Application web installable sur iPhone · Version de départ</div>
-</div>
-<div class="toast" id="toast" role="status"></div>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12082b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QRQC Fête">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.svg">
+<title>QRQC — La Roue de la Fête Foraine</title>
+<style>
+:root{--bg:#12082b;--panel:#1c0f3d;--cell:#2a1a55;--gold:#FFD93D;--pink:#FF3B6B;--teal:#2EC4B6;--violet:#7B2FF7;--soft:#a99bd1;--dark:#1a0b2e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#30204b 0%,var(--bg) 58%);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)}
+.app{max-width:1400px;margin:auto}header{text-align:center;padding:18px 8px 14px}header .eyebrow{color:var(--teal);letter-spacing:.18em;font-weight:800;font-size:.72rem}h1{font-size:clamp(1.5rem,4vw,2.6rem);margin:5px 0}header p{margin:5px;color:var(--soft)}
+.layout{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:13px;align-items:start}.panel{background:#1c0f3df2;border:1px solid #493267;border-radius:17px;padding:14px;min-width:0;box-shadow:0 12px 32px #0003}
+h2{font-size:1rem;color:var(--gold);margin:0 0 12px}.addrow{display:flex;gap:7px}input[type=text]{min-width:0;flex:1;background:#170e29;color:white;border:1px solid #594176;border-radius:10px;padding:11px;font:inherit}
+button,select{font:inherit;border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:pointer;touch-action:manipulation}button{background:var(--violet);color:white}button:active{transform:scale(.985)}button:disabled{opacity:.45}.add{background:var(--teal);color:#10221f;white-space:nowrap}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}.actions button{font-size:.83rem}.danger{background:#58304c}.count,.muted{color:var(--soft);font-size:.83rem}.count{margin:12px 0 7px}.name-list{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow:auto}.name-row{display:flex;gap:8px;align-items:center;background:#170e29;border:1px solid #35244b;border-radius:10px;padding:8px}.name-row input{width:19px;height:19px;accent-color:var(--teal)}.name{flex:1;overflow-wrap:anywhere}.off{text-decoration:line-through;color:#8e829f}.remove{background:transparent;color:#ff8aaa;padding:3px 7px;font-size:1.1rem}
+.option{display:flex;gap:8px;align-items:flex-start;margin-top:10px;color:var(--soft);font-size:.86rem}.option input{width:18px;height:18px;accent-color:var(--pink)}.gamebar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.gamebar button{background:#2a1a55;border:1px solid #513575;font-size:.82rem;flex:1;min-width:100px}.gamebar button.active{background:var(--pink);border-color:#ff91af}
+.game-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.game-title h2{margin-bottom:8px}.game-title .hint{color:var(--soft);font-size:.78rem;text-align:right}
+.stage{position:relative;background:radial-gradient(ellipse at center,#21113c,#10071f);border:2px solid #50326f;border-radius:14px;overflow:hidden}.stage canvas{display:block;width:100%;height:auto;aspect-ratio:760/670;touch-action:manipulation}
+.controls{display:flex;gap:9px;margin-top:10px}.play{flex:1;background:var(--pink);box-shadow:0 4px 0 #a51c4a;padding:14px;font-size:1rem}.status{padding:12px 8px 0;text-align:center;color:var(--gold);font-weight:800;overflow-wrap:anywhere;min-height:38px}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:17px}.history{display:flex;flex-direction:column;gap:6px}.histrow{display:flex;justify-content:space-between;gap:8px;background:#170e29;padding:9px 10px;border-radius:9px}.histrow strong{color:var(--gold);overflow-wrap:anywhere}.histrow small{color:#9d8db4;white-space:nowrap;font-size:.72rem}.empty{color:#9d8db4;padding:8px 0;font-size:.88rem}.footer{text-align:center;color:#8f80a5;font-size:.75rem;padding:17px 0 25px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.name-list{max-height:30vh}.panel{padding:12px}.gamebar button{min-width:90px}.game-title{align-items:flex-start}.game-title .hint{max-width:48%}}
+</style></head>
+<body><div class="app">
+<header><div class="eyebrow">★ LA FÊTE FORAINE QRQC ★</div><h1>QRQC — La Roue de la Fête Foraine</h1><p>Choisis un jeu, lance l'animation et découvre le gagnant.</p></header>
+<main class="layout">
+<section class="panel"><h2>🎟️ PARTICIPANTS</h2>
+<form id="addForm" class="addrow"><input id="nameInput" type="text" maxlength="60" placeholder="Ajouter un prénom…" autocomplete="off"><button class="add">＋ Ajouter</button></form>
+<div class="actions"><button id="checkAll">Tout cocher</button><button id="uncheckAll">Tout décocher</button><button id="shuffle">🔀 Mélanger</button><button id="clear" class="danger">Tout effacer</button></div>
+<div class="count" id="count"></div><div class="name-list" id="nameList"></div>
+<p class="muted">40 participants maximum. Les cases déterminent les participants actifs pour les jeux.</p>
+<label class="option"><input id="removeWinner" type="checkbox"><span>Décocher le gagnant après chaque tirage</span></label>
+<div class="history-head"><h2 style="margin:0">🏆 DERNIERS GAGNANTS</h2><button id="clearHistory" class="danger" style="font-size:.75rem;padding:7px">Vider</button></div><div class="history" id="history" style="margin-top:9px"></div>
+</section>
+<section class="panel">
+<div class="gamebar" id="gamebar"></div>
+<div class="game-title"><h2 id="gameName">🎡 La Roue</h2><div class="hint" id="hint">Clique sur la roue ou sur le bouton.</div></div>
+<div class="stage"><canvas id="game" width="760" height="670" aria-label="Animation du jeu"></canvas></div>
+<div class="controls"><button class="play" id="play">LANCER LA ROUE !</button></div><div class="status" id="status">Prêt à jouer !</div>
+</section></main><div class="footer">QRQC · Application web installable · Données enregistrées sur cet appareil</div></div>
 <script>
 (() => {
-  const $ = id => document.getElementById(id);
-  const STORAGE_KEY = "qrqc-fete-etape1-v1";
-  let participants = [];
-  let history = [];
-  let toastTimer;
-
-  function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({participants, history, removeWinner:$("removeWinner").checked})); } catch(e) {}
-  }
-  function load() {
-    try {
-      const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (Array.isArray(d.participants)) participants = d.participants.filter(p => p && typeof p.name === "string").slice(0,40);
-      if (Array.isArray(d.history)) history = d.history.slice(0,30);
-      $("removeWinner").checked = !!d.removeWinner;
-    } catch(e) {}
-  }
-  function notify(message) {
-    const el = $("toast"); el.textContent = message; el.style.display = "block";
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.style.display = "none", 2400);
-  }
-  function renderParticipants() {
-    const list = $("nameList"); list.replaceChildren();
-    participants.forEach((p, index) => {
-      const row = document.createElement("div"); row.className = "name-row";
-      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = p.checked; cb.setAttribute("aria-label", "Inclure " + p.name);
-      cb.addEventListener("change", () => { participants[index].checked = cb.checked; renderParticipants(); save(); });
-      const name = document.createElement("span"); name.className = "name" + (p.checked ? "" : " off"); name.textContent = p.name;
-      const remove = document.createElement("button"); remove.className = "remove"; remove.type = "button"; remove.textContent = "×"; remove.title = "Supprimer " + p.name; remove.setAttribute("aria-label", "Supprimer " + p.name);
-      remove.addEventListener("click", () => { participants.splice(index,1); renderParticipants(); save(); });
-      row.append(cb,name,remove); list.append(row);
-    });
-    const active = participants.filter(p => p.checked).length;
-    $("count").textContent = `${active} prénom${active>1?"s":""} coché${active>1?"s":""} sur ${participants.length}`;
-    $("draw").disabled = active < 2;
-    if (participants.length === 0) list.innerHTML = '<div class="empty">La piste est vide : ajoute des participants pour commencer.</div>';
-    save();
-  }
-  function renderHistory() {
-    const el = $("history"); el.replaceChildren();
-    if (!history.length) { el.innerHTML = '<div class="empty">Aucun gagnant pour le moment.</div>'; return; }
-    history.slice(0,10).forEach(item => {
-      const row = document.createElement("div"); row.className = "history-item";
-      const n = document.createElement("strong"); n.textContent = "★ " + item.name;
-      const d = document.createElement("small"); d.textContent = item.time;
-      row.append(n,d); el.append(row);
-    });
-  }
-  function addName(value) {
-    const name = value.trim();
-    if (!name) { notify("Saisis un prénom avant d’ajouter."); return false; }
-    if (participants.length >= 40) { notify("Maximum atteint : 40 participants."); return false; }
-    if (participants.some(p => p.name.toLocaleLowerCase("fr") === name.toLocaleLowerCase("fr"))) { notify("Ce prénom est déjà dans la liste."); return false; }
-    participants.push({name, checked:true}); renderParticipants(); $("winnerHint").textContent = "Prêt pour le tirage !"; return true;
-  }
-  $("addForm").addEventListener("submit", e => {
-    e.preventDefault(); if (addName($("nameInput").value)) $("nameInput").value = "";
-    $("nameInput").focus();
-  });
-  $("checkAll").addEventListener("click", () => { participants.forEach(p => p.checked=true); renderParticipants(); });
-  $("uncheckAll").addEventListener("click", () => { participants.forEach(p => p.checked=false); renderParticipants(); });
-  $("shuffle").addEventListener("click", () => {
-    for(let i=participants.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[participants[i],participants[j]]=[participants[j],participants[i]];}
-    renderParticipants(); notify("Liste mélangée !");
-  });
-  $("clear").addEventListener("click", () => {
-    if (!participants.length) return;
-    if (confirm("Effacer tous les participants ?")) { participants=[]; renderParticipants(); $("winner").textContent="À toi de jouer !"; $("winnerHint").textContent="Ajoute au moins 2 participants cochés."; }
-  });
-  $("draw").addEventListener("click", () => {
-    const active = participants.filter(p=>p.checked);
-    if(active.length<2){notify("Il faut au moins 2 participants cochés.");return;}
-    const btn=$("draw"); btn.disabled=true;
-    $("winner").textContent="🍀 Bonne chance…"; $("winnerHint").textContent="Le tirage est en cours";
-    let ticks=0;
-    const spin=setInterval(()=>{
-      const temp=active[Math.floor(Math.random()*active.length)];
-      $("winner").textContent=temp.name; ticks++;
-      if(ticks>=14){
-        clearInterval(spin);
-        const winner=active[Math.floor(Math.random()*active.length)];
-        $("winner").textContent=winner.name; $("winnerHint").textContent="★ Félicitations ! ★";
-        history.unshift({name:winner.name,time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · "+new Date().toLocaleDateString("fr-FR")});
-        history=history.slice(0,30); renderHistory();
-        if($("removeWinner").checked){const p=participants.find(p=>p.name===winner.name);if(p)p.checked=false;renderParticipants();}
-        else btn.disabled=participants.filter(p=>p.checked).length<2;
-        save();
-      }
-    },85);
-  });
-  $("removeWinner").addEventListener("change",save);
-  $("clearHistory").addEventListener("click",()=>{if(history.length&&confirm("Vider l’historique des gagnants ?")){history=[];renderHistory();save();}});
-  load(); renderParticipants(); renderHistory();
-  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+const $=id=>document.getElementById(id), cv=$("game"), ctx=cv.getContext("2d");
+const C={bg:"#12082b",panel:"#1c0f3d",cell:"#2a1a55",gold:"#FFD93D",pink:"#FF3B6B",teal:"#2EC4B6",violet:"#7B2FF7",soft:"#a99bd1",dark:"#1a0b2e"};
+const wheelColors=["#FF3B6B","#FFD93D","#2EC4B6","#7B2FF7","#FF8C42","#3A86FF","#06D6A0","#F72585"];
+const games=[
+{id:"wheel",name:"La Roue",icon:"🎡",button:"LANCER LA ROUE !",hint:"Clique sur la roue ou sur le bouton."},
+{id:"slot",name:"Machine à sous",icon:"🎰",button:"TIRER LA POIGNÉE !",hint:"Les rouleaux vont s'arrêter sur un prénom."},
+{id:"pinball",name:"Flipper",icon:"🕹️",button:"LANCER LA BILLE !",hint:"La bille rebondit sur les bumpers."},
+{id:"darts",name:"Fléchettes",icon:"🎯",button:"LANCER LA FLÉCHETTE !",hint:"La fléchette vise un prénom."},
+{id:"bowling",name:"Bowling",icon:"🎳",button:"LANCER LA BOULE !",hint:"La boule roule vers les quilles."},
+{id:"galton",name:"Planche de Galton",icon:"🔴",button:"LÂCHER LA BILLE !",hint:"La bille rebondit de cheville en cheville."},
+{id:"golf",name:"Minigolf",icon:"⛳",button:"FRAPPER LA BALLE !",hint:"Le golfeur frappe vers les trous."},
+{id:"marbles",name:"Course de billes",icon:"🏁",button:"OUVRIR LA BARRIÈRE !",hint:"Les billes dévalent la piste."}
+];
+const defaults=["Olivier","Pierre-Henri","Nicolas","Donetsi","Léa","Maylis","Jean-Baptiste","Guillaume","Valentin","Jeremy","Eric"];
+let participants=[],history=[],game="wheel",busy=false,anim=null,frame=0,angle=0,ball=null,marbles=[],winner=null,particles=[],gameState={};
+const rand=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)], clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function save(){try{localStorage.setItem("qrqc-fete-full-v1",JSON.stringify({participants,history,remove:$("removeWinner").checked}));}catch(e){}}
+function load(){try{let d=JSON.parse(localStorage.getItem("qrqc-fete-full-v1")||"{}");participants=Array.isArray(d.participants)?d.participants.slice(0,40):defaults.map(name=>({name,checked:true}));history=Array.isArray(d.history)?d.history.slice(0,30):[];$("removeWinner").checked=!!d.remove;}catch(e){participants=defaults.map(name=>({name,checked:true}));}}
+function active(){return participants.filter(p=>p.checked).map(p=>p.name)}
+function renderNames(){let list=$("nameList");list.replaceChildren();participants.forEach((p,i)=>{let row=document.createElement("div");row.className="name-row";let cb=document.createElement("input");cb.type="checkbox";cb.checked=p.checked;cb.addEventListener("change",()=>{participants[i].checked=cb.checked;renderNames();save()});let nm=document.createElement("span");nm.className="name"+(p.checked?"":" off");nm.textContent=p.name;let del=document.createElement("button");del.className="remove";del.textContent="×";del.title="Supprimer";del.addEventListener("click",()=>{participants.splice(i,1);renderNames();save()});row.append(cb,nm,del);list.append(row)});if(!participants.length)list.innerHTML='<div class="empty">Ajoute des participants pour commencer.</div>';let n=active().length;$("count").textContent=`${n} prénom${n>1?"s":""} coché${n>1?"s":""} sur ${participants.length}`;$("play").disabled=n<2||busy;save()}
+function renderHistory(){let el=$("history");el.replaceChildren();if(!history.length){el.innerHTML='<div class="empty">Aucun gagnant pour le moment.</div>';return}history.slice(0,10).forEach(h=>{let r=document.createElement("div");r.className="histrow";let n=document.createElement("strong");n.textContent="★ "+h.name;let d=document.createElement("small");d.textContent=h.game+" · "+h.time;r.append(n,d);el.append(r)})}
+function buildGamebar(){let bar=$("gamebar");bar.replaceChildren();games.forEach(g=>{let b=document.createElement("button");b.textContent=g.icon+" "+g.name;b.className=g.id===game?"active":"";b.addEventListener("click",()=>{if(busy)return;game=g.id;winner=null;gameState={};angle=rand(0,360);$("gameName").textContent=g.icon+" "+g.name;$("hint").textContent=g.hint;$("play").textContent=g.button;buildGamebar();$("status").textContent="Prêt à jouer !";draw();});bar.append(b)})}
+function rr(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}}
+function text(t,x,y,size=18,color="white",align="center",weight="700"){ctx.fillStyle=color;ctx.font=`${weight} ${size}px system-ui,sans-serif`;ctx.textAlign=align;ctx.textBaseline="middle";ctx.fillText(t,x,y)}
+function circle(x,y,r,fill,stroke="#fff",sw=2){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke()}}
+function line(x1,y1,x2,y2,color="#fff",w=3){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap="round";ctx.stroke()}
+function base(){ctx.clearRect(0,0,760,670);let gr=ctx.createRadialGradient(380,300,20,380,335,500);gr.addColorStop(0,"#24133f");gr.addColorStop(1,"#10071f");ctx.fillStyle=gr;ctx.fillRect(0,0,760,670);for(let i=0;i<45;i++){let x=(i*137)%760,y=(i*79)%640;circle(x,y,1.5,i%2?C.gold:C.soft,null)}}
+function drawWheel(){let names=active(),cx=380,cy=325,R=235;base();circle(cx,cy,R+26,"#C9971C","#7a5a0a",4);circle(cx,cy,R+3,"#5a3a05",null);if(!names.length){circle(cx,cy,R,C.cell,"white",3);text("Coche des noms",cx,cy,24,C.soft);return}let ext=2*Math.PI/names.length,start=(-Math.PI/2)+(angle*Math.PI/180);names.forEach((nm,i)=>{let a=start+i*ext,b=a+ext;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,a,b);ctx.closePath();ctx.fillStyle=wheelColors[i%wheelColors.length];ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=2;ctx.stroke();ctx.save();let mid=(a+b)/2;ctx.translate(cx+Math.cos(mid)*R*.65,cy+Math.sin(mid)*R*.65);ctx.rotate(mid+Math.PI/2);ctx.fillStyle="#1a0b2e";ctx.font=`bold ${clamp(24/names.length*3,10,19)}px system-ui`;ctx.textAlign="center";ctx.fillText(nm.length>15?nm.slice(0,14)+"…":nm,0,0);ctx.restore()});circle(cx,cy,45,C.gold,"#7a5a0a",3);circle(cx,cy,32,C.pink,"white",2);text(busy?"…":"GO!",cx,cy,18,"white");ctx.beginPath();ctx.moveTo(cx-22,cy-R-35);ctx.lineTo(cx+22,cy-R-35);ctx.lineTo(cx,cy-R+20);ctx.closePath();ctx.fillStyle=C.pink;ctx.fill();ctx.strokeStyle="white";ctx.lineWidth=3;ctx.stroke()}
+function drawSlot(){base();rr(75,35,610,565,22,"#8a1538",C.gold);for(let x=95;x<670;x+=28){circle(x,51,4,C.gold,"#7a5a0a",1);circle(x,584,4,C.gold,"#7a5a0a",1)}text("MACHINE À SOUS",380,83,28,C.gold);let names=active();for(let i=0;i<3;i++){let x=165+i*215;rr(x-90,190,180,230,12,"#fff4d6",C.gold);let nm=names.length?names[(gameState.reels?.[i]||i)%names.length]:"—";text(nm.length>13?nm.slice(0,12)+"…":nm,x,305,clamp(24-nm.length*.5,12,24),C.dark);rr(x-90,190,180,230,12,null,C.gold)}line(85,305,675,305,C.pink,5);rr(260,510,240,52,8,C.dark,C.gold);text("★ QRQC ★",380,536,20,C.gold);rr(680,190,20,150,5,"#3a2a5a","#8c75bd");line(690,215,710,270,C.gold,8);circle(710,270,13,C.pink,C.gold,3)}
+function drawPinball(){base();rr(145,55,470,555,28,"#1a1030",C.gold);ctx.beginPath();ctx.arc(380,255,205,Math.PI,Math.PI*2);ctx.lineTo(585,595);ctx.lineTo(175,595);ctx.closePath();ctx.fillStyle="#183d48";ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=5;ctx.stroke();[[285,195,28],[390,130,28],[470,215,28],[375,262,28]].forEach((p,i)=>{circle(p[0],p[1],p[2],i%2?C.pink:C.gold,"white",3);circle(p[0],p[1],7,"white",null)});for(let y=320;y<475;y+=40)for(let x=190+(y%80?25:0);x<550;x+=64)circle(x,y,6,C.gold,"#fff",1);line(260,555,335,530,C.pink,10);line(500,555,425,530,C.teal,10);circle(ball?.x||560,ball?.y||540,10,C.gold,C.pink,2);line(555,280,555,600,C.gold,4);text("FLIPPER",380,625,16,C.soft)}
+function drawDarts(){base();circle(380,320,245,"#7b122e",C.gold,7);[220,175,125,75,28].forEach((r,i)=>circle(380,320,r,i%2?"#1a0b2e":"#b52b4c","white",3));line(135,320,625,320,"#fff8",1);line(380,75,380,565,"#fff8",1);text("★",380,320,34,C.gold);if(gameState.dart){let d=gameState.dart;ctx.save();ctx.translate(d.x,d.y);ctx.rotate(d.a);line(-65,0,5,0,"#ddd",5);ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-10,-9);ctx.lineTo(-10,9);ctx.closePath();ctx.fillStyle=C.gold;ctx.fill();ctx.fillStyle=C.pink;ctx.fillRect(-55,-10,18,20);ctx.restore()}text("CIBLE DES PRÉNOMS",380,615,16,C.gold)}
+function drawBowling(){base();ctx.beginPath();ctx.moveTo(180,80);ctx.lineTo(580,80);ctx.lineTo(650,610);ctx.lineTo(110,610);ctx.closePath();ctx.fillStyle="#8a5a35";ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=5;ctx.stroke();for(let i=0;i<5;i++)line(200+i*90,100,150+i*115,590,"#dba873",2);let pins=gameState.pins||Array.from({length:10},(_,i)=>({x:380+(i%4-1.5)*25+Math.floor(i/4)*12,y:145+Math.floor(i/4)*24,down:false}));pins.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.down?1.2:0);rr(-8,-20,16,40,7,p.down?"#777":"#fff",C.pink);rr(-8,-7,16,5,2,C.pink,null);ctx.restore()});circle(ball?.x||380,ball?.y||540,24,"#2d79ff",C.gold,3);text("BOWLING",380,625,16,C.gold)}
+function drawGalton(){base();rr(110,55,540,555,10,"#18102c",C.gold);let rows=9;for(let r=0;r<rows;r++)for(let c=0;c<=r;c++){let x=380+(c-r/2)*48,y=125+r*43;circle(x,y,5,C.gold,"#fff",1)}circle(ball?.x||380,ball?.y||85,12,C.pink,C.gold,2);let names=active(),bins=Math.max(2,names.length);for(let i=0;i<bins;i++){let w=500/bins,x=130+i*w;rr(x,525,w-2,68,3,winner===names[i]?C.pink:wheelColors[i%8],"#fff");text(names[i]?.slice(0,9)||"—",x+(w-2)/2,560,clamp(w*.25,8,15),C.dark)}}
+function drawGolf(){base();rr(110,80,540,520,35,"#176c42",C.gold);ctx.fillStyle="#248e50";ctx.beginPath();ctx.ellipse(380,340,210,235,0,0,Math.PI*2);ctx.fill();[[250,480,22],[510,480,22],[380,395,26],[205,310,20],[555,310,20]].forEach(p=>circle(p[0],p[1],p[2],"#d2b74e","#fff",2));circle(380,170,24,"#10131b",C.gold,3);text("⛳",380,170,24,C.gold);circle(ball?.x||380,ball?.y||525,7,"white","#aaa",2);line(420,525,440,470,C.dark,5);line(440,470,455,490,C.gold,4);text("MINIGOLF",380,625,16,C.gold)}
+function drawMarbles(){base();ctx.save();ctx.translate(80,80);ctx.rotate(.08);rr(0,0,600,530,16,"#2a1a55",C.gold);for(let r=0;r<6;r++){let y=45+r*78;line(10,y,570,y+25,"#c9a3ff",5);for(let x=40;x<560;x+=75)circle(x+(r%2)*35,y+14,6,C.gold,"white",1)}for(let i=0;i<8;i++){let x=40+i*72,y=500;circle(x,y,8,wheelColors[i%8],"white",2)}ctx.restore();let names=active();marbles.forEach((m,i)=>{circle(m.x,m.y,Math.max(5,12-names.length*.12),wheelColors[i%8],"white",1);text(String(i+1),m.x,m.y,9,C.dark)})}
+function draw(){switch(game){case"wheel":drawWheel();break;case"slot":drawSlot();break;case"pinball":drawPinball();break;case"darts":drawDarts();break;case"bowling":drawBowling();break;case"galton":drawGalton();break;case"golf":drawGolf();break;case"marbles":drawMarbles();break}}
+function record(name){history.unshift({name,game:games.find(g=>g.id===game).name,time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · "+new Date().toLocaleDateString("fr-FR")});history=history.slice(0,30);renderHistory();if($("removeWinner").checked){let p=participants.find(p=>p.name===name);if(p)p.checked=false;renderNames()}save()}
+function finish(name){busy=false;winner=name;$("status").textContent="★ "+name+" ★ — Félicitations !";$("play").disabled=active().length<2;record(name);draw()}
+function animateGame(){if(!busy)return;frame++;
+if(game==="wheel"){let t=clamp(frame/150,0,1);angle=gameState.startAngle-gameState.turns*(1-Math.pow(1-t,4));if(t>=1){let names=active(),n=names.length,idx=Math.floor((((90-angle)%360+360)%360)/(360/n))%n;finish(names[idx]);return}}
+else if(game==="slot"){gameState.reels=gameState.reels.map((v,i)=>frame<45+i*20?Math.floor(Math.random()*active().length):v);if(frame>=105){finish(gameState.target);return}}
+else if(game==="pinball"){ball.x+=ball.vx;ball.y+=ball.vy;ball.vy+=.16;if(ball.x<180||ball.x>570)ball.vx*=-.82;if(ball.y>570){finish(gameState.target);return}}
+else if(game==="darts"){let t=clamp(frame/65,0,1),d=gameState.dart;d.x=380+(gameState.targetIndex-(active().length-1)/2)*Math.min(24,180/active().length)*(1-t)+rand(-1,1)*(1-t)*12;d.y=85+235*t;d.a=rand(-.08,.08)*(1-t);if(t>=1){finish(gameState.target);return}}
+else if(game==="bowling"){ball.y+=5.2;ball.x+=(gameState.targetX-ball.x)*.045;if(frame>75){gameState.pins.forEach((p,i)=>{if(i%Math.max(1,Math.floor(10/active().length))===gameState.targetIndex%Math.max(1,Math.floor(10/active().length)))p.down=true});finish(gameState.target);return}}
+else if(game==="galton"){ball.y+=3.6;ball.x+=Math.random()<.5?-11:11;if(ball.y>495){finish(gameState.target);return}}
+else if(game==="golf"){ball.x+=ball.vx;ball.y+=ball.vy;ball.vx*=.985;ball.vy*=.985;ball.vy-=.03;if(ball.y<195||ball.x<140||ball.x>620||ball.y>590){finish(gameState.target);return}}
+else if(game==="marbles"){let done=true;marbles.forEach((m,i)=>{if(!m.done){m.vy+=.12;m.x+=m.vx;m.y+=m.vy;m.vx+=rand(-.12,.12);if(m.x<105||m.x>650)m.vx*=-.7;if(m.y>580){m.done=true;m.rank=marbles.filter(x=>x.done).length}if(m.y<590)done=false}});if(done||frame>700){let names=active();let idx=gameState.targetIndex;finish(names[idx]);return}}
+draw();anim=requestAnimationFrame(animateGame)}
+function start(){let names=active();if(names.length<2){$("status").textContent="Il faut au moins 2 participants cochés.";return}if(busy)return;busy=true;frame=0;winner=null;gameState={};let targetIndex=Math.floor(Math.random()*names.length);gameState.targetIndex=targetIndex;gameState.target=names[targetIndex];$("status").textContent="Le jeu est en cours…";$("play").disabled=true;
+switch(game){
+case"wheel":gameState.startAngle=angle;gameState.turns=rand(5,8)*360;break;
+case"slot":gameState.reels=[0,0,0];gameState.target=names[targetIndex];gameState.reels=[targetIndex,targetIndex,targetIndex];break;
+case"pinball":ball={x:560,y:540,vx:rand(-2.5,2.5),vy:-rand(10,14)};break;
+case"darts":gameState.dart={x:380,y:85,a:0};gameState.targetIndex=targetIndex;break;
+case"bowling":ball={x:380,y:540,vx:0,vy:0};gameState.targetX=380+(targetIndex-(names.length-1)/2)*Math.min(22,180/names.length);gameState.pins=Array.from({length:10},(_,i)=>({x:380+(i%4-1.5)*25+Math.floor(i/4)*12,y:145+Math.floor(i/4)*24,down:false}));break;
+case"galton":ball={x:380,y:85,vx:0,vy:0};break;
+case"golf":ball={x:380,y:525,vx:rand(-2,2),vy:-rand(5,7)};break;
+case"marbles":marbles=names.map((n,i)=>({x:130+(i%8)*70,y:110+Math.floor(i/8)*18,vx:rand(-1.5,1.5),vy:0,done:false}));break;
+}
+anim=requestAnimationFrame(animateGame)}
+$("addForm").addEventListener("submit",e=>{e.preventDefault();let name=$("nameInput").value.trim();if(!name)return;if(participants.length>=40){alert("Maximum : 40 participants.");return}if(participants.some(p=>p.name.toLocaleLowerCase("fr")===name.toLocaleLowerCase("fr"))){alert("Ce prénom existe déjà.");return}participants.push({name,checked:true});$("nameInput").value="";renderNames()});
+$("checkAll").onclick=()=>{participants.forEach(p=>p.checked=true);renderNames()};$("uncheckAll").onclick=()=>{participants.forEach(p=>p.checked=false);renderNames()};$("shuffle").onclick=()=>{for(let i=participants.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[participants[i],participants[j]]=[participants[j],participants[i]]}renderNames()};$("clear").onclick=()=>{if(confirm("Effacer tous les participants ?")){participants=[];renderNames();draw()}};$("play").onclick=start;$("removeWinner").onchange=save;$("clearHistory").onclick=()=>{if(confirm("Vider l'historique ?")){history=[];renderHistory();save()}};
+cv.addEventListener("click",()=>{if(game==="wheel"&&!busy)start()});
+if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+load();buildGamebar();renderNames();renderHistory();$("gameName").textContent="🎡 La Roue";$("hint").textContent=games[0].hint;$("play").textContent=games[0].button;draw();
 })();
-</script>
-</body>
-</html>
+</script></body></html>
